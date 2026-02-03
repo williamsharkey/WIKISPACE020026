@@ -19,19 +19,21 @@ export class MainMenu {
     container.id = 'main-menu';
     container.innerHTML = `
       <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
         #main-menu {
           position: fixed;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background: #000;
+          background: #f8f9fa;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
           z-index: 10000;
-          font-family: 'Courier New', monospace;
+          font-family: 'IBM Plex Mono', 'Consolas', monospace;
         }
 
         #main-menu.hidden {
@@ -39,27 +41,27 @@ export class MainMenu {
         }
 
         .menu-title {
-          font-size: 48px;
-          color: #0f0;
-          text-shadow: 0 0 30px #0f0;
-          letter-spacing: 8px;
-          margin-bottom: 10px;
+          font-size: 36px;
+          color: #202122;
+          letter-spacing: 4px;
+          margin-bottom: 5px;
+          font-weight: 500;
         }
 
         .menu-year {
-          font-size: 24px;
-          color: #0a0;
-          margin-bottom: 40px;
-          letter-spacing: 12px;
+          font-size: 18px;
+          color: #54595d;
+          margin-bottom: 30px;
+          letter-spacing: 8px;
         }
 
         .menu-tagline {
-          color: #666;
-          font-size: 14px;
-          margin-bottom: 50px;
-          max-width: 600px;
+          color: #54595d;
+          font-size: 12px;
+          margin-bottom: 40px;
+          max-width: 550px;
           text-align: center;
-          line-height: 1.6;
+          line-height: 1.8;
         }
 
         .menu-name-input {
@@ -67,100 +69,100 @@ export class MainMenu {
         }
 
         .menu-name-input label {
-          color: #888;
-          font-size: 12px;
+          color: #54595d;
+          font-size: 10px;
           display: block;
           margin-bottom: 8px;
+          text-transform: uppercase;
+          letter-spacing: 2px;
         }
 
         .menu-name-input input {
-          background: #111;
-          border: 2px solid #333;
-          color: #0f0;
-          font-family: 'Courier New', monospace;
-          font-size: 18px;
-          padding: 10px 20px;
-          width: 300px;
+          background: #fff;
+          border: 1px solid #a2a9b1;
+          color: #202122;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 16px;
+          padding: 12px 20px;
+          width: 280px;
           text-align: center;
           outline: none;
         }
 
         .menu-name-input input:focus {
-          border-color: #0f0;
-          box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+          border-color: #3366cc;
+          box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
         }
 
         .menu-teams {
           display: flex;
-          gap: 40px;
-          margin-bottom: 50px;
+          gap: 30px;
+          margin-bottom: 40px;
         }
 
         .team-btn {
-          width: 200px;
-          height: 200px;
+          width: 220px;
+          height: 180px;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          border: 3px solid;
-          transition: all 0.3s;
-          background: #0a0a0a;
+          border: 1px solid #a2a9b1;
+          transition: all 0.2s;
+          background: #fff;
+          padding: 20px;
         }
 
         .team-btn:hover {
-          transform: scale(1.05);
+          border-color: #3366cc;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .team-btn.red {
-          border-color: #f44;
+          border-top: 3px solid #c33;
         }
 
         .team-btn.red:hover {
-          background: #200;
-          box-shadow: 0 0 40px rgba(255, 68, 68, 0.5);
+          background: #fff8f8;
         }
 
         .team-btn.blue {
-          border-color: #44f;
+          border-top: 3px solid #3366cc;
         }
 
         .team-btn.blue:hover {
-          background: #002;
-          box-shadow: 0 0 40px rgba(68, 68, 255, 0.5);
+          background: #f8f9ff;
         }
 
         .team-name {
-          font-size: 24px;
-          margin-bottom: 15px;
+          font-size: 16px;
+          margin-bottom: 12px;
+          font-weight: 600;
+          letter-spacing: 2px;
         }
 
         .team-btn.red .team-name {
-          color: #f44;
+          color: #c33;
         }
 
         .team-btn.blue .team-name {
-          color: #44f;
+          color: #3366cc;
         }
 
         .team-philosophy {
-          font-size: 11px;
-          color: #666;
+          font-size: 10px;
+          color: #72777d;
           text-align: center;
-          max-width: 150px;
-          line-height: 1.4;
+          line-height: 1.6;
         }
 
         .menu-controls {
-          color: #444;
-          font-size: 11px;
+          color: #72777d;
+          font-size: 10px;
           margin-top: 30px;
           text-align: center;
-        }
-
-        .menu-controls div {
-          margin: 3px 0;
+          line-height: 1.8;
         }
       </style>
 
