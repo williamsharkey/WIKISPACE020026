@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@dimforge/rapier3d": "^0.12.0",
-    "three": "^0.160.0",
+    "@wikispace/shared": "*",
     "socket.io-client": "^4.7.2",
-    "@wikispace/shared": "*"
+    "three": "^0.160.0",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0"
   },
   "devDependencies": {
     "@types/three": "^0.160.0",

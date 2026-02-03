@@ -9,6 +9,9 @@ import { WikiWorld } from '../world/WikiWorld';
 import { Weapon } from '../combat/Weapon';
 import { CombatEffects } from '../combat/Effects';
 import { RealityShift } from '../ascii/RealityShift';
+import { ModManager } from '../npcs/ModManager';
+import { ArticleControl } from '../control/ArticleControl';
+import { TextEditor } from '../control/TextEditor';
 import { HUD } from '../ui/HUD';
 
 export class Engine {
@@ -30,8 +33,15 @@ export class Engine {
   private weapon!: Weapon;
   private effects!: CombatEffects;
   private realityShift!: RealityShift;
+  private modManager!: ModManager;
+  private articleControl!: ArticleControl;
+  private textEditor!: TextEditor;
   private input!: Input;
   private hud!: HUD;
+
+  // Game state
+  private playerTeam: 'red' | 'blue' = 'red';
+  private score = { red: 0, blue: 0 };
 
   // Timing
   private clock = new THREE.Clock();
@@ -121,8 +131,35 @@ export class Engine {
     // Reality shift (ASCII mode)
     this.realityShift = new RealityShift();
 
+    // Mods (NPCs)
+    this.modManager = new ModManager(this.scene, this.effects, {
+      onModDestroyed: (id, team) => {
+        console.log(`Mod ${id} destroyed by ${team}`);
+        this.score[team] += 25;
+      },
+      onModPilled: (id, team) => {
+        console.log(`Mod ${id} pilled to ${team}`);
+        this.score[team] += 50;
+      }
+    });
+
+    // Article control
+    this.articleControl = new ArticleControl();
+
+    // Text editor
+    this.textEditor = new TextEditor({
+      onEditComplete: (edits) => {
+        console.log('Edits completed:', edits);
+        // TODO: Apply edits to monuments
+        this.score[this.playerTeam] += edits.length * 20;
+      }
+    });
+
     // Load initial article
     await this.wikiWorld.loadArticle('Philosophy');
+
+    // Spawn mods in the article
+    this.modManager.spawnMods(5, new THREE.Vector3(50, 10, -50), 80);
 
     // Player ship
     this.ship = new Ship(this.scene, this.world, this.RAPIER, this.camera);
@@ -192,8 +229,20 @@ export class Engine {
     this.weapon.update(dt);
     this.effects.update(dt);
 
-    // Check projectile collisions with monuments
+    // Check projectile collisions with monuments and mods
     this.checkProjectileCollisions();
+
+    // Update mods
+    const inputState = this.input.getState();
+    this.modManager.update(dt, this.ship.getPosition(), this.playerTeam, inputState.pill);
+
+    // Update article control
+    const modCounts = this.modManager.getModCounts();
+    this.articleControl.setPresence(
+      { red: this.playerTeam === 'red' ? 1 : 0, blue: this.playerTeam === 'blue' ? 1 : 0 },
+      modCounts
+    );
+    const controlState = this.articleControl.update(dt);
 
     // Check for link ramp interaction
     if (!this.transitioning) {
@@ -248,8 +297,17 @@ export class Engine {
       const hit = this.weapon.checkCollision(monument.mesh.position, 2);
       if (hit) {
         this.effects.createLetterDestruction(monument.mesh.position.clone(), monument.getText());
-        // TODO: Actually destroy or damage the monument
+        this.score[this.playerTeam] += 5;
         console.log(`Hit letter: ${monument.getText()}`);
+      }
+    }
+
+    // Check hits on mods
+    const mods = this.modManager.getAllMods();
+    for (const mod of mods) {
+      const hit = this.weapon.checkCollision(mod.mesh.position, 3);
+      if (hit) {
+        this.modManager.checkProjectileHit(mod.mesh.position, hit.damage, this.playerTeam);
       }
     }
   }
