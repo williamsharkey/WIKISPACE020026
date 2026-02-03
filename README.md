@@ -38,18 +38,18 @@ At any moment, reality can **collapse**. The 3D world flattens into a top-down v
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ WIKISPACE.TXT - Notepad              [_][□][X] │
+│ WIKISPACE.TXT - Notepad              [_][□][X]  │
 ├─────────────────────────────────────────────────┤
 │ File  Edit  Format  View  Help                  │
 ├─────────────────────────────────────────────────┤
 │                                                 │
-│    The       *         quick    brown          │
+│    The       *         quick    brown           │
 │                  ^                              │
-│         fox    jumps      @      over          │
-│    ------>                                     │
-│              the     lazy       M    dog       │
+│         fox    jumps      @      over           │
+│    ------>                                      │
+│              the     lazy       M    dog        │
 │                                                 │
-│   [LINK:Animals]           [LINK:Speed]        │
+│   [LINK:Animals]           [LINK:Speed]         │
 │                                                 │
 └─────────────────────────────────────────────────┘
 ```
@@ -69,7 +69,7 @@ When you gain XP or unlock something, no flashy UI. Instead, Notepad opens your 
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ pilot_xX_RedPill_Xx.json - Notepad   [_][□][X] │
+│ pilot_xX_RedPill_Xx.json - Notepad    [_][□][X] │
 ├─────────────────────────────────────────────────┤
 │ File  Edit  Format  View  Help                  │
 ├─────────────────────────────────────────────────┤
