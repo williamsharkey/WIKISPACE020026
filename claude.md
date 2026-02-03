@@ -235,6 +235,96 @@ The ultimate prize: controlling history itself.
 - [ ] Implement ping system for coordination
 - [ ] Add article bookmarks for tactical planning
 
+## Phase 5B: Reality Shift (ASCII Mode)
+
+The mindwarp: at any moment, the 3D world collapses into its "true form" - a 1995 Notepad.exe text document. Then seamlessly returns to 3D cockpit. Which view is real?
+
+### 5B.1 ASCII Render Mode
+- [ ] Create ASCII renderer (separate from Three.js, or overlay)
+- [ ] Use ONLY: ASCII printable chars (32-126) + box drawing (─│┌┐└┘├┤┬┴┼)
+- [ ] NO unicode, NO emojis, NO extended chars
+- [ ] Monospace font only (Courier, Consolas, or similar)
+- [ ] Fixed character grid (80x24? 120x40? configurable)
+- [ ] Background: exact Notepad.exe gray/white (#FFFFFF or system gray)
+- [ ] Text: black, no syntax highlighting, no colors
+
+### 5B.2 World-to-ASCII Mapping
+- [ ] Camera snaps to perfect top-down orthographic
+- [ ] 3D positions → integer row/column (Math.round, no interpolation)
+- [ ] **Player ships**:
+  - Facing up: `^`
+  - Facing down: `v`
+  - Facing left: `<`
+  - Facing right: `>`
+  - Or just `*` for simplicity
+- [ ] **Enemy ships**: `@` or team-colored if possible (but no color in true mode)
+- [ ] **Mods**: `M` (neutral), `R` (red-pilled), `B` (blue-pilled)
+- [ ] **Projectiles**: `-` (horizontal), `|` (vertical), `/` `\` (diagonal)
+- [ ] **Letter monuments**: just the letter itself
+- [ ] **Link ramps**: `[LINK]` or underscored text
+- [ ] **Walls/boundaries**: box drawing characters
+
+### 5B.3 Movement in ASCII Mode
+- [ ] NO smooth movement - discrete grid steps only
+- [ ] Position updates are INTEGER only (quantized)
+- [ ] Movement feels "choppy" like old roguelikes
+- [ ] Collision is tile-based
+- [ ] Feels exactly like editing a text file where cursor jumps
+
+### 5B.4 The Notepad.exe Aesthetic
+- [ ] Window chrome: title bar "Untitled - Notepad" or "WIKISPACE.TXT - Notepad"
+- [ ] Menu bar: File Edit Format View Help (non-functional, just visual)
+- [ ] Scroll bars (fake, or functional if world is large)
+- [ ] Status bar at bottom (optional)
+- [ ] Blinking cursor `_` or `|` at player position
+- [ ] Selection highlight if targeting something
+- [ ] The ENTIRE game fits in what looks like a text document
+
+### 5B.5 Transition Effects
+- [ ] **3D → ASCII trigger**:
+  - Random chance during play?
+  - Triggered by damage/death?
+  - Power-up/power-down?
+  - Red pill item pickup?
+  - Proximity to "glitch zones"?
+- [ ] **Transition animation**:
+  - Screen flicker/static
+  - Scanlines collapse
+  - Resolution drops in steps (like zooming out)
+  - Colors desaturate to monochrome
+  - 3D depth flattens to 2D
+  - Final snap to pure text grid
+- [ ] **ASCII → 3D return**:
+  - Text characters gain depth/extrude
+  - Color bleeds back in
+  - Camera smoothly rotates from overhead to cockpit
+  - Perspective returns
+  - Full 3D immersion restored
+- [ ] Transition should feel like "waking up" or "going under"
+
+### 5B.6 Gameplay in ASCII Mode
+- [ ] ALL game mechanics still work (shooting, movement, pilling)
+- [ ] Just visually different - same game state
+- [ ] Other players might be in 3D while you're in ASCII (desync reality)
+- [ ] Can you toggle it manually? Or is it forced?
+- [ ] Strategic implications: ASCII mode might reveal hidden things?
+
+### 5B.7 The Philosophy
+```
+In WIKISPACE020026, reality has layers:
+
+Layer 3: The 3D cockpit, immersive space combat
+Layer 2: The ASCII grid, text-file truth
+Layer 1: The raw data underneath (never shown?)
+
+Red Pills believe ASCII is the true form.
+Blue Pills believe 3D is the true form.
+Who is right? Does it matter?
+
+The game asks: if you can edit the words,
+do you control reality or just the description of it?
+```
+
 ## Phase 6: Polish & Content
 
 ### 6.1 Visual Polish
@@ -331,7 +421,9 @@ npm run server:prod  # Production server
 4. **M4 - Combat**: Can shoot letters and other players (local)
 5. **M5 - Multiplayer**: Two players can see each other and fight
 6. **M6 - Teams**: Full team gameplay with scoring
-7. **M7 - Polish**: Ready for public playtesting
+7. **M7 - Mods & Control**: NPC mods, pilling, article control, text editing
+8. **M8 - Reality Shift**: ASCII mode, transitions, the mindwarp
+9. **M9 - Polish**: Ready for public playtesting
 
 ## File Structure
 
@@ -376,6 +468,13 @@ WIKISPACE020026/
 │   │       │   ├── TextEditor.ts     # 10-word edit UI
 │   │       │   ├── EditPreview.ts    # 3D preview of changes
 │   │       │   └── EditSync.ts       # Sync edits to all players
+│   │       ├── ascii/
+│   │       │   ├── ASCIIRenderer.ts  # Pure text grid renderer
+│   │       │   ├── NotepadChrome.ts  # Window frame, menus, scrollbars
+│   │       │   ├── WorldToGrid.ts    # 3D coords → integer row/col
+│   │       │   ├── ASCIISprites.ts   # Character mappings (^ v < > * @)
+│   │       │   ├── Transition.ts     # 3D ↔ ASCII morph effects
+│   │       │   └── RealityShift.ts   # Trigger conditions, state management
 │   │       ├── multiplayer/
 │   │       │   ├── NetworkClient.ts  # Socket.io client
 │   │       │   ├── Prediction.ts     # Client-side prediction

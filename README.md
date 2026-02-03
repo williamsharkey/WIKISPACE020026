@@ -32,6 +32,37 @@ A multiplayer space combat simulator where **real Wikipedia articles become infi
 - Destroy letter-monuments for points
 - Control key articles for territory
 
+### Reality Shift (ASCII Mode)
+
+At any moment, reality can **collapse**. The 3D world flattens into a top-down view rendered as pure ASCII text in a Notepad.exe window from 1995:
+
+```
+┌─────────────────────────────────────────────────┐
+│ WIKISPACE.TXT - Notepad              [_][□][X] │
+├─────────────────────────────────────────────────┤
+│ File  Edit  Format  View  Help                  │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│    The       *         quick    brown          │
+│                  ^                              │
+│         fox    jumps      @      over          │
+│    ------>                                     │
+│              the     lazy       M    dog       │
+│                                                 │
+│   [LINK:Animals]           [LINK:Speed]        │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+- `^` `v` `<` `>` = your ship (direction)
+- `*` = other players
+- `@` = enemies
+- `M` = mods
+- Movement is **integer grid steps only** (no smooth animation)
+- Then reality snaps back to 3D cockpit
+
+*Which view is the truth? The immersive 3D world, or the text file underneath?*
+
 ### Mods & Article Control
 
 **Mods** are NPC entities that patrol articles. You can:
