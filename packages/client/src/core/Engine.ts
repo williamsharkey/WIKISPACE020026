@@ -5,6 +5,7 @@ import type RAPIER from '@dimforge/rapier3d';
 import { Ship } from '../ships/Ship';
 import { Input } from './Input';
 import { Starfield } from '../world/Starfield';
+import { WikiWorld } from '../world/WikiWorld';
 import { HUD } from '../ui/HUD';
 
 export class Engine {
@@ -22,6 +23,7 @@ export class Engine {
   // Game objects
   private ship!: Ship;
   private starfield!: Starfield;
+  private wikiWorld!: WikiWorld;
   private input!: Input;
   private hud!: HUD;
 
@@ -31,6 +33,7 @@ export class Engine {
   private readonly fixedDelta = 1 / 60; // 60 Hz physics
 
   private running = false;
+  private transitioning = false;
 
   constructor(container: HTMLElement, rapier: typeof RAPIER) {
     this.container = container;
@@ -97,6 +100,12 @@ export class Engine {
     // Starfield background
     this.starfield = new Starfield(this.scene);
 
+    // Wikipedia world
+    this.wikiWorld = new WikiWorld(this.scene);
+
+    // Load initial article
+    await this.wikiWorld.loadArticle('Philosophy');
+
     // Player ship
     this.ship = new Ship(this.scene, this.world, this.RAPIER, this.camera);
     await this.ship.init();
@@ -152,10 +161,36 @@ export class Engine {
     // Update visual-only things
     this.starfield.update(this.camera.position);
     this.ship.update(dt);
+    this.wikiWorld.update(dt);
+
+    // Check for link ramp interaction
+    if (!this.transitioning) {
+      const shipPos = this.ship.getPosition();
+      const ramp = this.wikiWorld.getRampAtPosition(shipPos);
+
+      if (ramp && this.input.getState().interact) {
+        this.traverseLink(ramp.target);
+      }
+    }
 
     // Update HUD
     const shipState = this.ship.getState();
-    this.hud.update(shipState);
+    this.hud.update(shipState, this.wikiWorld.getCurrentArticle());
+  }
+
+  private async traverseLink(targetArticle: string) {
+    if (this.transitioning) return;
+    this.transitioning = true;
+
+    console.log(`Traversing to: ${targetArticle}`);
+
+    // TODO: Add transition effect
+    await this.wikiWorld.loadArticle(targetArticle);
+
+    // Reset ship position
+    // this.ship.setPosition(new THREE.Vector3(0, 5, 20));
+
+    this.transitioning = false;
   }
 
   private render() {

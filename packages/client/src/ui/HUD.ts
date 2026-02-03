@@ -10,6 +10,7 @@ export class HUD {
   private boostIndicator: HTMLElement;
   private crosshair: HTMLElement;
   private positionElement: HTMLElement;
+  private articleElement: HTMLElement;
 
   constructor() {
     this.container = this.createHUD();
@@ -21,6 +22,7 @@ export class HUD {
     this.boostIndicator = document.getElementById('hud-boost')!;
     this.crosshair = document.getElementById('hud-crosshair')!;
     this.positionElement = document.getElementById('hud-position')!;
+    this.articleElement = document.getElementById('hud-article')!;
   }
 
   private createHUD(): HTMLElement {
@@ -112,9 +114,32 @@ export class HUD {
           letter-spacing: 4px;
           opacity: 0.5;
         }
+
+        #hud-article {
+          position: absolute;
+          top: 50px;
+          left: 20px;
+          font-size: 18px;
+          color: #0ff;
+          text-shadow: 0 0 10px #0ff;
+          max-width: 400px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        #hud-controls {
+          position: absolute;
+          bottom: 20px;
+          right: 20px;
+          font-size: 11px;
+          opacity: 0.5;
+          text-align: right;
+        }
       </style>
 
       <div id="hud-title">WIKISPACE020026</div>
+      <div id="hud-article">Loading...</div>
 
       <div id="hud-crosshair">+</div>
 
@@ -130,12 +155,22 @@ export class HUD {
         <div>Y: 0</div>
         <div>Z: 0</div>
       </div>
+
+      <div id="hud-controls">
+        <div>WASD - Move | Mouse - Look</div>
+        <div>SHIFT - Boost | E - Use Link</div>
+        <div>SPACE - Fire | F - Pill</div>
+      </div>
     `;
 
     return container;
   }
 
-  update(state: ShipState) {
+  update(state: ShipState, article?: string) {
+    // Article name
+    if (article) {
+      this.articleElement.textContent = `>> ${article.replace(/_/g, ' ')}`;
+    }
     // Speed
     this.speedElement.textContent = Math.floor(state.speed).toString().padStart(3, '0');
 
