@@ -63,7 +63,7 @@ export class CombatEffects {
   }
 
   createLetterDestruction(position: THREE.Vector3, letter: string): void {
-    this.createExplosion(position, 0x00ff00, 0.5);
+    this.createExplosion(position, 0x3366cc, 0.5);
     // TODO: Could spawn flying letter fragments
   }
 

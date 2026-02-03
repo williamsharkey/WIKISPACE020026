@@ -1,4 +1,5 @@
-// TextMonument - A word rendered as a 3D monument in space
+// TextMonument - A word rendered as a massive Hollywood-sign style monument in space
+// Letters always face the viewer (billboard style)
 
 import * as THREE from 'three';
 
@@ -14,7 +15,7 @@ export class TextMonument {
   mesh: THREE.Group;
   private text: string;
   private options: TextMonumentOptions;
-  private letterMeshes: THREE.Mesh[] = [];
+  private letterSprites: THREE.Sprite[] = [];
   private time = 0;
 
   constructor(text: string, position: THREE.Vector3, options: TextMonumentOptions = {}) {
@@ -29,6 +30,7 @@ export class TextMonument {
 
     this.mesh = new THREE.Group();
     this.mesh.position.copy(position);
+    this.mesh.userData.id = `monument-${Math.random().toString(36).substr(2, 9)}`;
 
     this.createLetters();
   }
@@ -36,83 +38,99 @@ export class TextMonument {
   private createLetters() {
     const { scale, isLink, linkDirection, emissive } = this.options;
 
+    // Much larger letters - Hollywood sign style
+    const letterSize = 8 * scale!;
+    const letterSpacing = 5 * scale!;
+
     // Determine color based on type
-    let color = 0x888888; // Default gray
-    let emissiveColor = 0x000000;
-    let emissiveIntensity = 0;
+    let textColor = '#ffffff';
+    let glowColor = 'rgba(255, 255, 255, 0.3)';
 
     if (isLink) {
       if (linkDirection === 'up') {
-        color = 0x4488ff; // Blue for up links
-        emissiveColor = 0x2244aa;
-        emissiveIntensity = 0.5;
+        textColor = '#88ccff';
+        glowColor = 'rgba(68, 136, 255, 0.5)';
       } else {
-        color = 0xff8844; // Orange for down links
-        emissiveColor = 0xaa4422;
-        emissiveIntensity = 0.5;
+        textColor = '#ffcc88';
+        glowColor = 'rgba(255, 136, 68, 0.5)';
       }
     }
 
     if (emissive) {
-      color = 0x00ff00;
-      emissiveColor = 0x00ff00;
-      emissiveIntensity = 1;
+      textColor = '#6699ff';
+      glowColor = 'rgba(51, 102, 204, 0.6)';
     }
 
-    const letterSpacing = 1.2 * scale!;
-    const letterHeight = 2 * scale!;
-    const letterDepth = 0.5 * scale!;
+    // Create each letter as a billboard sprite
+    const chars = this.text.split('');
+    const totalWidth = chars.length * letterSpacing;
 
-    // Create each letter as a 3D box with the letter texture
-    // For now, use simple boxes - will upgrade to proper text geometry
-    this.text.split('').forEach((char, index) => {
+    chars.forEach((char, index) => {
       if (char === ' ') return;
 
-      const geometry = new THREE.BoxGeometry(
-        0.8 * scale!,
-        letterHeight,
-        letterDepth
-      );
-
-      const material = new THREE.MeshStandardMaterial({
-        color,
-        emissive: emissiveColor,
-        emissiveIntensity,
-        metalness: 0.3,
-        roughness: 0.7,
-      });
-
-      const letterMesh = new THREE.Mesh(geometry, material);
-      letterMesh.position.x = index * letterSpacing - (this.text.length * letterSpacing) / 2;
-
-      // Add slight random rotation for visual interest
-      letterMesh.rotation.y = (Math.random() - 0.5) * 0.1;
-      letterMesh.rotation.z = (Math.random() - 0.5) * 0.05;
-
-      this.letterMeshes.push(letterMesh);
-      this.mesh.add(letterMesh);
-
-      // Add a label sprite for the actual letter
+      // Create canvas for the letter
       const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
+      const size = 256; // High resolution for crisp text
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = emissive ? '#00ff00' : (isLink ? (linkDirection === 'up' ? '#88ccff' : '#ffcc88') : '#ffffff');
-      ctx.font = 'bold 48px monospace';
+
+      // Glow effect
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = 30;
+
+      // Draw letter
+      ctx.fillStyle = textColor;
+      ctx.font = `bold ${size * 0.7}px "IBM Plex Mono", Consolas, monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(char.toUpperCase(), 32, 32);
 
+      // Draw multiple times for glow buildup
+      for (let i = 0; i < 3; i++) {
+        ctx.fillText(char.toUpperCase(), size / 2, size / 2);
+      }
+
+      // Create sprite material
       const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+
       const spriteMaterial = new THREE.SpriteMaterial({
         map: texture,
         transparent: true,
+        depthWrite: false,
       });
+
       const sprite = new THREE.Sprite(spriteMaterial);
-      sprite.scale.set(scale! * 1.5, scale! * 1.5, 1);
-      sprite.position.z = letterDepth / 2 + 0.1;
-      letterMesh.add(sprite);
+      sprite.scale.set(letterSize, letterSize, 1);
+
+      // Position letter in the word
+      sprite.position.x = (index * letterSpacing) - (totalWidth / 2) + (letterSpacing / 2);
+
+      // Slight vertical variation for organic feel
+      sprite.position.y = Math.sin(index * 0.5) * 0.5;
+
+      this.letterSprites.push(sprite);
+      this.mesh.add(sprite);
     });
+
+    // Add a subtle backing glow for the whole word
+    if (isLink) {
+      this.addWordGlow(totalWidth, letterSize, linkDirection === 'up' ? 0x4488ff : 0xff8844);
+    }
+  }
+
+  private addWordGlow(width: number, height: number, color: number) {
+    const glowGeometry = new THREE.PlaneGeometry(width + 4, height + 2);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    glow.position.z = -0.5;
+    this.mesh.add(glow);
   }
 
   update(dt: number) {
@@ -120,16 +138,27 @@ export class TextMonument {
 
     // Subtle floating animation for link monuments
     if (this.options.isLink) {
-      this.letterMeshes.forEach((mesh, i) => {
-        mesh.position.y = Math.sin(this.time * 2 + i * 0.3) * 0.2;
+      this.letterSprites.forEach((sprite, i) => {
+        sprite.position.y = Math.sin(this.time * 1.5 + i * 0.3) * 0.8;
       });
     }
   }
 
+  // Make the whole word group face a target (usually camera)
+  lookAt(target: THREE.Vector3) {
+    // Get direction to target
+    const direction = new THREE.Vector3();
+    direction.subVectors(target, this.mesh.position).normalize();
+
+    // Only rotate on Y axis to keep text upright
+    const angle = Math.atan2(direction.x, direction.z);
+    this.mesh.rotation.y = angle;
+  }
+
   setHighlighted(highlighted: boolean) {
-    this.letterMeshes.forEach(mesh => {
-      const material = mesh.material as THREE.MeshStandardMaterial;
-      material.emissiveIntensity = highlighted ? 1 : (this.options.isLink ? 0.5 : 0);
+    this.letterSprites.forEach(sprite => {
+      const material = sprite.material as THREE.SpriteMaterial;
+      material.opacity = highlighted ? 1.2 : 1;
     });
   }
 
@@ -138,9 +167,9 @@ export class TextMonument {
   }
 
   dispose() {
-    this.letterMeshes.forEach(mesh => {
-      mesh.geometry.dispose();
-      (mesh.material as THREE.Material).dispose();
+    this.letterSprites.forEach(sprite => {
+      (sprite.material as THREE.SpriteMaterial).map?.dispose();
+      (sprite.material as THREE.SpriteMaterial).dispose();
     });
   }
 }

@@ -29,23 +29,23 @@ export class Starfield {
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
 
-      // Color variation (white, blue-white, yellow-white)
+      // Color variation - dark colors for light mode (black/dark gray/dark blue)
       const colorChoice = Math.random();
       if (colorChoice < 0.6) {
-        // White
-        colors[i * 3] = 1;
-        colors[i * 3 + 1] = 1;
-        colors[i * 3 + 2] = 1;
+        // Dark gray
+        colors[i * 3] = 0.2;
+        colors[i * 3 + 1] = 0.2;
+        colors[i * 3 + 2] = 0.25;
       } else if (colorChoice < 0.8) {
-        // Blue-white
-        colors[i * 3] = 0.8;
-        colors[i * 3 + 1] = 0.9;
-        colors[i * 3 + 2] = 1;
+        // Dark blue
+        colors[i * 3] = 0.1;
+        colors[i * 3 + 1] = 0.15;
+        colors[i * 3 + 2] = 0.3;
       } else {
-        // Yellow-white
-        colors[i * 3] = 1;
-        colors[i * 3 + 1] = 0.95;
-        colors[i * 3 + 2] = 0.8;
+        // Black
+        colors[i * 3] = 0.1;
+        colors[i * 3 + 1] = 0.1;
+        colors[i * 3 + 2] = 0.1;
       }
 
       // Size variation
@@ -61,9 +61,10 @@ export class Starfield {
       size: 2,
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.6,
       sizeAttenuation: true,
-      blending: THREE.AdditiveBlending,
+      // Normal blending for light mode (dark stars on light background)
+      blending: THREE.NormalBlending,
     });
 
     return new THREE.Points(geometry, material);

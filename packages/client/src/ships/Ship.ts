@@ -38,6 +38,8 @@ export class Ship {
   private boostCooldown = 0;
   private boosting = false;
   private weaponHeat = 0;
+  private team: 'red' | 'blue' = 'red';
+  private teamColor: number = 0xcc3333;
 
   // Camera smoothing
   private cameraOffset = new THREE.Vector3(0, 2, 8);
@@ -64,35 +66,51 @@ export class Ship {
   private createMesh() {
     this.mesh = new THREE.Group();
 
-    // Main hull - sleek triangular shape
+    // Main hull - sleek triangular shape (brighter, more visible)
     const hullGeometry = new THREE.ConeGeometry(1, 4, 4);
     hullGeometry.rotateX(Math.PI / 2);
     const hullMaterial = new THREE.MeshStandardMaterial({
-      color: 0x334455,
-      metalness: 0.8,
-      roughness: 0.2,
+      color: 0xaabbcc,
+      emissive: 0x222233,
+      emissiveIntensity: 0.3,
+      metalness: 0.6,
+      roughness: 0.3,
     });
     const hull = new THREE.Mesh(hullGeometry, hullMaterial);
     this.mesh.add(hull);
 
-    // Wings
+    // Wings (brighter)
     const wingGeometry = new THREE.BoxGeometry(6, 0.1, 2);
     const wingMaterial = new THREE.MeshStandardMaterial({
-      color: 0x445566,
-      metalness: 0.7,
-      roughness: 0.3,
+      color: 0x8899aa,
+      emissive: 0x111122,
+      emissiveIntensity: 0.2,
+      metalness: 0.5,
+      roughness: 0.4,
     });
     const wings = new THREE.Mesh(wingGeometry, wingMaterial);
     wings.position.z = 1;
     this.mesh.add(wings);
 
-    // Engine pods
+    // Wing edge lights
+    const edgeLightGeo = new THREE.BoxGeometry(0.2, 0.15, 1.5);
+    const edgeLightMat = new THREE.MeshBasicMaterial({ color: 0x3366cc });
+    const leftLight = new THREE.Mesh(edgeLightGeo, edgeLightMat);
+    leftLight.position.set(-3, 0, 1);
+    this.mesh.add(leftLight);
+    const rightLight = new THREE.Mesh(edgeLightGeo, edgeLightMat);
+    rightLight.position.set(3, 0, 1);
+    this.mesh.add(rightLight);
+
+    // Engine pods (brighter)
     const podGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
     podGeometry.rotateX(Math.PI / 2);
     const podMaterial = new THREE.MeshStandardMaterial({
-      color: 0x222233,
-      metalness: 0.9,
-      roughness: 0.1,
+      color: 0x667788,
+      emissive: 0x111111,
+      emissiveIntensity: 0.2,
+      metalness: 0.7,
+      roughness: 0.2,
     });
 
     const leftPod = new THREE.Mesh(podGeometry, podMaterial);
@@ -103,15 +121,27 @@ export class Ship {
     rightPod.position.set(2, 0, 2);
     this.mesh.add(rightPod);
 
+    // Engine glows (visible from behind)
+    const engineGlowGeo = new THREE.CircleGeometry(0.35, 16);
+    const engineGlowMat = new THREE.MeshBasicMaterial({ color: 0x3366cc, side: THREE.DoubleSide });
+    const leftEngineGlow = new THREE.Mesh(engineGlowGeo, engineGlowMat);
+    leftEngineGlow.position.set(-2, 0, 2.8);
+    this.mesh.add(leftEngineGlow);
+    const rightEngineGlow = new THREE.Mesh(engineGlowGeo, engineGlowMat);
+    rightEngineGlow.position.set(2, 0, 2.8);
+    this.mesh.add(rightEngineGlow);
+
     // Cockpit (camera will be inside this)
     this.cockpit = new THREE.Group();
     const canopyGeometry = new THREE.SphereGeometry(0.8, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     const canopyMaterial = new THREE.MeshStandardMaterial({
-      color: 0x88ccff,
+      color: 0xaaddff,
+      emissive: 0x334455,
+      emissiveIntensity: 0.3,
       metalness: 0.1,
       roughness: 0.1,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.4,
     });
     const canopy = new THREE.Mesh(canopyGeometry, canopyMaterial);
     canopy.position.y = 0.2;
@@ -120,13 +150,18 @@ export class Ship {
     this.cockpit.position.z = -0.5;
     this.mesh.add(this.cockpit);
 
+    // Add a light on the ship so it illuminates itself
+    const shipLight = new THREE.PointLight(0xffffff, 0.5, 20);
+    shipLight.position.set(0, 2, 0);
+    this.mesh.add(shipLight);
+
     this.scene.add(this.mesh);
   }
 
   private createPhysics() {
-    // Create rigid body
+    // Create rigid body - start in front of the document
     const bodyDesc = this.RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(0, 0, 0)
+      .setTranslation(0, 0, 80)
       .setLinearDamping(1 - SHIP.DRAG)
       .setAngularDamping(1 - SHIP.ANGULAR_DRAG);
 

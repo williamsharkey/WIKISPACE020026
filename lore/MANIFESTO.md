@@ -1,6 +1,6 @@
-# WIKISPACE020026 MANIFESTO
+# WIKISPACE2626 MANIFESTO
 
-## The Year is 020026
+## The Year is 2626
 
 Twenty thousand years from now. Humanity is gone. What remains are **word-based lifeforms** - consciousnesses that exist as patterns of text, living in the infinite lattice of Wikipedia.
 
@@ -67,4 +67,4 @@ Maybe the real answer is: **both are just renders of the same data**.
 
 *"In the beginning was the Word. In the end, the Word is all that remains."*
 
-— Terminal inscription, WIKISPACE Station Alpha, 020026
+— Terminal inscription, WIKISPACE Station Alpha, 2626

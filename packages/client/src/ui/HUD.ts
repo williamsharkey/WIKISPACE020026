@@ -16,6 +16,8 @@ export class HUD {
   private controlBar: HTMLElement;
   private controlText: HTMLElement;
   private scoreElement: HTMLElement;
+  private clickPrompt: HTMLElement;
+  private warpIndicator: HTMLElement;
 
   constructor() {
     this.container = this.createHUD();
@@ -32,6 +34,35 @@ export class HUD {
     this.controlBar = document.getElementById('hud-control-fill')!;
     this.controlText = document.getElementById('hud-control-text')!;
     this.scoreElement = document.getElementById('hud-score')!;
+    this.clickPrompt = document.getElementById('hud-click-prompt')!;
+    this.warpIndicator = document.getElementById('hud-warp')!;
+
+    // Listen for pointer lock changes
+    document.addEventListener('pointerlockchange', () => {
+      if (document.pointerLockElement) {
+        this.clickPrompt.classList.add('hidden');
+      } else {
+        this.clickPrompt.classList.remove('hidden');
+      }
+    });
+
+    // Click on prompt requests pointer lock
+    this.clickPrompt.addEventListener('click', () => {
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        canvas.requestPointerLock();
+      }
+    });
+
+    // Any key press also hides prompt and requests pointer lock
+    document.addEventListener('keydown', (e) => {
+      if (!this.clickPrompt.classList.contains('hidden')) {
+        const canvas = document.querySelector('canvas');
+        if (canvas) {
+          canvas.requestPointerLock();
+        }
+      }
+    }, { once: false });
   }
 
   private createHUD(): HTMLElement {
@@ -215,9 +246,90 @@ export class HUD {
         .score-blue {
           color: #3366cc;
         }
+
+        #hud-click-prompt {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          pointer-events: auto;
+          cursor: pointer;
+          background: rgba(0, 0, 0, 0.3);
+        }
+
+        #hud-click-prompt.hidden {
+          display: none;
+        }
+
+        .click-prompt-box {
+          background: rgba(0, 0, 0, 0.85);
+          border: 2px solid #3366cc;
+          padding: 30px 50px;
+          animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+          0%, 100% { border-color: #3366cc; }
+          50% { border-color: #6699ff; }
+        }
+
+        .click-prompt-text {
+          font-size: 16px;
+          color: #fff;
+          margin-bottom: 8px;
+          letter-spacing: 4px;
+        }
+
+        .click-prompt-sub {
+          font-size: 10px;
+          color: #888;
+          letter-spacing: 1px;
+        }
+
+        #hud-warp {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, 120px);
+          text-align: center;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+
+        #hud-warp.visible {
+          opacity: 1;
+        }
+
+        .warp-box {
+          background: rgba(51, 102, 204, 0.3);
+          border: 2px solid #3366cc;
+          padding: 12px 24px;
+          animation: warp-pulse 1.5s infinite;
+        }
+
+        @keyframes warp-pulse {
+          0%, 100% { border-color: #3366cc; box-shadow: 0 0 10px rgba(51, 102, 204, 0.3); }
+          50% { border-color: #6699ff; box-shadow: 0 0 20px rgba(51, 102, 204, 0.6); }
+        }
+
+        .warp-key {
+          font-size: 14px;
+          color: #fff;
+          margin-bottom: 4px;
+        }
+
+        .warp-target {
+          font-size: 10px;
+          color: #9cf;
+          letter-spacing: 1px;
+        }
       </style>
 
-      <div id="hud-title">WIKISPACE 020026</div>
+      <div id="hud-title">WIKISPACE 2626</div>
       <div id="hud-article">Loading...</div>
 
       <div id="hud-crosshair">+</div>
@@ -256,6 +368,20 @@ export class HUD {
           <div id="hud-control-fill"></div>
         </div>
       </div>
+
+      <div id="hud-click-prompt">
+        <div class="click-prompt-box">
+          <div class="click-prompt-text">CLICK TO PLAY</div>
+          <div class="click-prompt-sub">Mouse controls enabled on click</div>
+        </div>
+      </div>
+
+      <div id="hud-warp">
+        <div class="warp-box">
+          <div class="warp-key">[ E ] WARP</div>
+          <div class="warp-target" id="hud-warp-target"></div>
+        </div>
+      </div>
     `;
 
     return container;
@@ -266,7 +392,8 @@ export class HUD {
     article?: string,
     weaponHeat: number = 0,
     controlState?: ControlState,
-    score?: { red: number; blue: number }
+    score?: { red: number; blue: number },
+    nearbyWarp?: { target: string; distance: number } | null
   ) {
     // Article name
     if (article) {
@@ -325,5 +452,16 @@ export class HUD {
       <div>Y: ${Math.floor(state.position.y)}</div>
       <div>Z: ${Math.floor(state.position.z)}</div>
     `;
+
+    // Warp indicator
+    if (nearbyWarp && nearbyWarp.distance < 50) {
+      this.warpIndicator.classList.add('visible');
+      const targetEl = document.getElementById('hud-warp-target');
+      if (targetEl) {
+        targetEl.textContent = `→ ${nearbyWarp.target}`;
+      }
+    } else {
+      this.warpIndicator.classList.remove('visible');
+    }
   }
 }

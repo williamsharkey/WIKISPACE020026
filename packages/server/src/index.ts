@@ -1,4 +1,4 @@
-// WIKISPACE020026 Server
+// WIKISPACE2626 Server
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -119,7 +119,7 @@ httpServer.listen(PORT, () => {
 ║   ╚███╔███╔╝██║██║  ██╗██║███████║██║     ██║  ██║╚██████╗███████╗  ║
 ║    ╚══╝╚══╝ ╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝  ║
 ║                                                               ║
-║                         020026                                ║
+║                          2626                                 ║
 ║                                                               ║
 ║   Server running on port ${PORT}                                 ║
 ║   The word-based lifeforms await...                           ║

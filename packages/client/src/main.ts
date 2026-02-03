@@ -1,6 +1,7 @@
-// WIKISPACE020026 - Main Entry Point
+// WIKISPACE2626 - Main Entry Point
 
 import { Engine } from './core/Engine';
+import { TeamSelect } from './ui/TeamSelect';
 import * as RAPIER from '@dimforge/rapier3d';
 
 const PROPAGANDA_MESSAGES = [
@@ -78,13 +79,23 @@ async function init() {
     // Small delay to show more propaganda
     await new Promise(r => setTimeout(r, 1500));
 
-    setLoadProgress(95, 'Entering wiki-space...');
+    setLoadProgress(95, 'Preparing neural interface...');
 
-    // Hide loading screen
+    // Hide loading screen and show team selection
     setTimeout(() => {
       stopPropaganda();
       if (loadingScreen) loadingScreen.classList.add('hidden');
-      engine.start();
+
+      // Show team selection screen
+      const teamSelect = new TeamSelect({
+        onTeamSelected: (team) => {
+          console.log(`Team selected: ${team}`);
+          engine.setPlayerTeam(team);
+          engine.start();
+        }
+      });
+      teamSelect.show();
+
     }, 800);
 
     setLoadProgress(100, 'Consensus achieved.');

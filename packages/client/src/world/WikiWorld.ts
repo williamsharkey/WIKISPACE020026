@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { TextMonument } from './TextMonument';
 import { LinkRamp } from './LinkRamp';
+import { getCachedArticle, getCachedArticleTitles } from './articleCache';
 
 export interface ParsedWord {
   id: string;
@@ -28,17 +29,25 @@ export class WikiWorld {
   private worldGroup: THREE.Group;
   private currentArticle: string = '';
 
-  // Layout constants
-  private readonly WORD_SPACING = 8;
-  private readonly LINE_WIDTH = 15; // words per line
-  private readonly LINE_HEIGHT = 6;
-  private readonly PARAGRAPH_DEPTH = 20;
-  private readonly WORD_SCALE = 2;
+  // Layout constants - readable document style floating in space
+  private readonly WORD_SPACING = 12;       // Horizontal space between words (like normal text)
+  private readonly LINE_WIDTH = 12;         // Words per line before wrapping
+  private readonly LINE_HEIGHT = 18;        // Vertical space between lines
+  private readonly PARAGRAPH_GAP = 40;      // Extra gap between paragraphs
+  private readonly WORD_SCALE = 1;          // Base scale for words
 
-  constructor(scene: THREE.Scene) {
+  // Camera reference for billboarding
+  private cameraRef: THREE.Camera | null = null;
+
+  constructor(scene: THREE.Scene, camera?: THREE.Camera) {
     this.scene = scene;
+    this.cameraRef = camera || null;
     this.worldGroup = new THREE.Group();
     this.scene.add(this.worldGroup);
+  }
+
+  setCamera(camera: THREE.Camera) {
+    this.cameraRef = camera;
   }
 
   async loadArticle(title: string): Promise<ParsedArticle> {
@@ -58,8 +67,15 @@ export class WikiWorld {
   }
 
   private async fetchArticle(title: string): Promise<{ title: string; extract: string; links: string[] }> {
+    // Try cache first (instant, no CORS issues)
+    const cached = getCachedArticle(title);
+    if (cached) {
+      console.log(`Loaded "${title}" from cache`);
+      return cached;
+    }
+
+    // Fall back to Wikipedia API
     try {
-      // Use Wikipedia's REST API to get plain text extract
       const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
       const response = await fetch(url);
 
@@ -68,20 +84,7 @@ export class WikiWorld {
       }
 
       const data = await response.json();
-
-      // Also fetch links
-      const linksUrl = `https://en.wikipedia.org/api/rest_v1/page/related/${encodeURIComponent(title)}`;
-      let links: string[] = [];
-
-      try {
-        const linksResponse = await fetch(linksUrl);
-        if (linksResponse.ok) {
-          const linksData = await linksResponse.json();
-          links = linksData.pages?.slice(0, 20).map((p: any) => p.title) || [];
-        }
-      } catch {
-        // Links are optional
-      }
+      const links = this.generateContextualLinks(title);
 
       return {
         title: data.title,
@@ -90,12 +93,31 @@ export class WikiWorld {
       };
     } catch (error) {
       console.error('Failed to fetch article:', error);
+      // Return fallback with links to cached articles
       return {
         title,
-        extract: `Welcome to WIKISPACE020026. Article "${title}" could not be loaded. You are a word-based lifeform navigating the remnants of human knowledge. The year is 020026.`,
-        links: ['Philosophy', 'Reality', 'Consciousness', 'Truth', 'Time'],
+        extract: `Welcome to WIKISPACE2626. Article "${title}" exists beyond the cached manifold. You are a word-based lifeform navigating the remnants of human knowledge. The year is 020026. Navigate to a known concept to continue your journey.`,
+        links: getCachedArticleTitles().slice(0, 10),
       };
     }
+  }
+
+  private generateContextualLinks(title: string): string[] {
+    // Use cached article titles as links
+    const allTitles = getCachedArticleTitles();
+
+    // Filter out the current article and shuffle
+    const filtered = allTitles.filter(link =>
+      link.toLowerCase() !== title.toLowerCase()
+    );
+
+    // Shuffle array
+    for (let i = filtered.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+    }
+
+    return filtered.slice(0, 10);
   }
 
   private parseArticle(
@@ -108,19 +130,42 @@ export class WikiWorld {
     // Split into paragraphs, then words
     const paragraphs = article.extract.split(/\n+/);
     let wordId = 0;
+    let currentY = 0; // Track Y position as we go down
 
     paragraphs.forEach((paragraph, paragraphIndex) => {
       const paragraphWords = paragraph.split(/\s+/).filter(w => w.length > 0);
 
-      paragraphWords.forEach((word, wordIndex) => {
+      // Track X position for variable-width word layout
+      let currentX = 0;
+      let currentLine = 0;
+      const maxLineWidth = this.LINE_WIDTH * this.WORD_SPACING;
+
+      paragraphWords.forEach((word, localWordIndex) => {
         // Clean the word
         const cleanWord = word.replace(/[^\w'-]/g, '');
         if (!cleanWord) return;
 
-        // Calculate position
-        const x = (wordIndex % this.LINE_WIDTH) * this.WORD_SPACING;
-        const y = -Math.floor(wordIndex / this.LINE_WIDTH) * this.LINE_HEIGHT;
-        const z = -paragraphIndex * this.PARAGRAPH_DEPTH;
+        // Estimate word width based on character count
+        const wordWidth = cleanWord.length * 4 + this.WORD_SPACING;
+
+        // Check if we need to wrap to next line
+        if (currentX + wordWidth > maxLineWidth && currentX > 0) {
+          currentX = 0;
+          currentLine++;
+        }
+
+        // Position: document-style layout
+        // X: flows left to right
+        const x = currentX - maxLineWidth / 2 + wordWidth / 2;
+
+        // Y: lines go down, paragraphs have extra gap
+        const y = currentY - currentLine * this.LINE_HEIGHT;
+
+        // Z: flat plane at z=0, or slight depth per paragraph for layers
+        const z = -paragraphIndex * 5;
+
+        // Move X cursor for next word
+        currentX += wordWidth;
 
         // Check if this word matches a link
         const matchingLink = article.links.find(
@@ -132,7 +177,6 @@ export class WikiWorld {
         let linkDirection: 'up' | 'down' | undefined;
 
         if (isLink && matchingLink) {
-          // Determine if link goes "up" (alphabetically before) or "down" (after)
           linkDirection = matchingLink.toLowerCase() < currentTitle.toLowerCase() ? 'up' : 'down';
           links.push({
             text: cleanWord,
@@ -149,19 +193,20 @@ export class WikiWorld {
           linkDirection,
           position: new THREE.Vector3(x, y, z),
           paragraphIndex,
-          wordIndex,
+          wordIndex: localWordIndex,
         });
       });
+
+      // After each paragraph, move Y down for next paragraph
+      const linesInParagraph = currentLine + 1;
+      currentY -= linesInParagraph * this.LINE_HEIGHT + this.PARAGRAPH_GAP;
     });
 
     return { title: article.title, words, links };
   }
 
   private buildWorld(article: ParsedArticle) {
-    // Create ground plane (subtle grid)
-    const gridHelper = new THREE.GridHelper(500, 50, 0x004400, 0x002200);
-    gridHelper.position.y = -20;
-    this.worldGroup.add(gridHelper);
+    // No grid - let the words be the focus in the void of space
 
     // Create word monuments
     article.words.forEach(word => {
@@ -193,12 +238,13 @@ export class WikiWorld {
         this.worldGroup.add(ramp.mesh);
       });
 
-    // Add title as massive monument in the sky
+    // Add title as header above the document
     const titleMonument = new TextMonument(
       article.title.toUpperCase(),
-      new THREE.Vector3(50, 40, -30),
-      { scale: 8, emissive: true }
+      new THREE.Vector3(0, 30, 0),
+      { scale: 2, emissive: true }
     );
+    this.monuments.push(titleMonument); // Add to monuments so it billboards too
     this.worldGroup.add(titleMonument.mesh);
 
     // Add ambient particles
@@ -206,23 +252,24 @@ export class WikiWorld {
   }
 
   private addAmbientParticles() {
-    const particleCount = 500;
+    // Subtle dust particles in space - very sparse
+    const particleCount = 200;
     const positions = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 400;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 400;
+      positions[i * 3] = (Math.random() - 0.5) * 800;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 800;
     }
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const material = new THREE.PointsMaterial({
-      color: 0x00ff00,
-      size: 0.5,
+      color: 0x6699cc,
+      size: 0.8,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.15,
       blending: THREE.AdditiveBlending,
     });
 
@@ -253,13 +300,28 @@ export class WikiWorld {
     return null;
   }
 
-  getRampAtPosition(position: THREE.Vector3, radius: number = 10): LinkRamp | null {
+  getRampAtPosition(position: THREE.Vector3, radius: number = 25): LinkRamp | null {
     for (const ramp of this.ramps) {
       if (ramp.mesh.position.distanceTo(position) < radius) {
         return ramp;
       }
     }
     return null;
+  }
+
+  getNearestRamp(position: THREE.Vector3): { ramp: LinkRamp; distance: number } | null {
+    let nearest: LinkRamp | null = null;
+    let nearestDist = Infinity;
+
+    for (const ramp of this.ramps) {
+      const dist = ramp.mesh.position.distanceTo(position);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = ramp;
+      }
+    }
+
+    return nearest ? { ramp: nearest, distance: nearestDist } : null;
   }
 
   getCurrentArticle(): string {
@@ -272,7 +334,13 @@ export class WikiWorld {
 
   update(dt: number) {
     // Animate monuments, ramps
-    this.monuments.forEach(m => m.update(dt));
+    this.monuments.forEach(m => {
+      m.update(dt);
+      // Make monuments face the camera (billboard effect)
+      if (this.cameraRef) {
+        m.lookAt(this.cameraRef.position);
+      }
+    });
     this.ramps.forEach(r => r.update(dt));
   }
 }

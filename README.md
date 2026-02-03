@@ -1,6 +1,8 @@
-# WIKISPACE020026
+# WIKISPACE2626
 
 > *The year is 020026. All life has transitioned into word-based lifeforms. The Red Pills and Blue Pills fight for control over history and consensus reality.*
+
+## [▶ PLAY NOW](https://williamsharkey.github.io/WIKISPACE2626/)
 
 ## The Game
 
@@ -147,7 +149,7 @@ npm run build
 ## Architecture
 
 ```
-WIKISPACE020026/
+WIKISPACE2626/
 ├── client/           # Three.js frontend
 │   ├── src/
 │   │   ├── core/     # Engine, renderer, physics

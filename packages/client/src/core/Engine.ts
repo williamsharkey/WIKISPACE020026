@@ -42,6 +42,7 @@ export class Engine {
   // Game state
   private playerTeam: 'red' | 'blue' = 'red';
   private score = { red: 0, blue: 0 };
+  private lightMode = true; // Default to light mode
 
   // Timing
   private clock = new THREE.Clock();
@@ -67,9 +68,9 @@ export class Engine {
   }
 
   private initThree() {
-    // Scene
+    // Scene - default to light mode (white background like Wikipedia)
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000008);
+    this.scene.background = new THREE.Color(0xf8f9fa);
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
@@ -85,22 +86,26 @@ export class Engine {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.container.appendChild(this.renderer.domElement);
 
-    // Lighting
-    const ambient = new THREE.AmbientLight(0x404040, 0.5);
+    // Lighting - brighter for visibility
+    const ambient = new THREE.AmbientLight(0x666677, 1.2);
     this.scene.add(ambient);
 
-    const directional = new THREE.DirectionalLight(0xffffff, 1);
+    const directional = new THREE.DirectionalLight(0xffffff, 1.5);
     directional.position.set(100, 100, 50);
     this.scene.add(directional);
 
-    // Add some colored point lights for atmosphere
-    const redLight = new THREE.PointLight(0xff4444, 0.5, 500);
-    redLight.position.set(-100, 50, -100);
-    this.scene.add(redLight);
+    const directional2 = new THREE.DirectionalLight(0x8888ff, 0.5);
+    directional2.position.set(-50, -50, -100);
+    this.scene.add(directional2);
 
-    const blueLight = new THREE.PointLight(0x4444ff, 0.5, 500);
-    blueLight.position.set(100, -50, 100);
+    // Add some colored point lights for atmosphere
+    const blueLight = new THREE.PointLight(0x3366cc, 1, 500);
+    blueLight.position.set(100, 50, 100);
     this.scene.add(blueLight);
+
+    const blueLight2 = new THREE.PointLight(0x3366cc, 0.8, 500);
+    blueLight2.position.set(-100, -50, -100);
+    this.scene.add(blueLight2);
   }
 
   private initPhysics() {
@@ -132,8 +137,8 @@ export class Engine {
     // Starfield background
     this.starfield = new Starfield(this.scene);
 
-    // Wikipedia world
-    this.wikiWorld = new WikiWorld(this.scene);
+    // Wikipedia world - pass camera for billboard effect
+    this.wikiWorld = new WikiWorld(this.scene, this.camera);
 
     // Combat systems
     this.weapon = new Weapon(this.scene);
@@ -184,12 +189,34 @@ export class Engine {
   start() {
     this.running = true;
     this.clock.start();
-    this.input.lock();
+    // Don't lock pointer here - requires user gesture
+    // The Input class will lock on first click
     this.loop();
   }
 
   stop() {
     this.running = false;
+  }
+
+  setPlayerTeam(team: 'red' | 'blue') {
+    this.playerTeam = team;
+    console.log(`Player team set to: ${team}`);
+  }
+
+  setLightMode(light: boolean) {
+    this.lightMode = light;
+    if (light) {
+      // Light mode - white background, dark elements
+      this.scene.background = new THREE.Color(0xf8f9fa);
+    } else {
+      // Dark mode - dark space background
+      this.scene.background = new THREE.Color(0x000008);
+    }
+  }
+
+  toggleLightMode() {
+    this.setLightMode(!this.lightMode);
+    return this.lightMode;
   }
 
   private loop() {
@@ -267,12 +294,15 @@ export class Engine {
 
     // Update HUD
     const shipState = this.ship.getState();
+    const nearestRamp = this.wikiWorld.getNearestRamp(shipState.position);
+    const nearbyWarp = nearestRamp ? { target: nearestRamp.ramp.target, distance: nearestRamp.distance } : null;
     this.hud.update(
       shipState,
       this.wikiWorld.getCurrentArticle(),
       this.weapon.getHeat(),
       controlState,
-      this.score
+      this.score,
+      nearbyWarp
     );
 
     // Update reality shift (ASCII mode)
