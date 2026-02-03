@@ -1,24 +1,23 @@
 // WIKISPACE020026 - Main Entry Point
 
 import { Engine } from './core/Engine';
-
-const loadBar = document.getElementById('load-bar') as HTMLDivElement;
-const loadStatus = document.getElementById('load-status') as HTMLDivElement;
-const loadingScreen = document.getElementById('loading') as HTMLDivElement;
+import * as RAPIER from '@dimforge/rapier3d';
 
 function setLoadProgress(percent: number, status: string) {
-  loadBar.style.width = `${percent}%`;
-  loadStatus.textContent = status;
+  const loadBar = document.getElementById('load-bar');
+  const loadStatus = document.getElementById('load-status');
+  if (loadBar) loadBar.style.width = `${percent}%`;
+  if (loadStatus) loadStatus.textContent = status;
 }
 
 async function init() {
+  const loadingScreen = document.getElementById('loading');
+  const loadStatus = document.getElementById('load-status');
+
   try {
     setLoadProgress(10, 'Loading physics engine...');
 
-    // Dynamic import for Rapier WASM
-    const RAPIER = await import('@dimforge/rapier3d');
-    await RAPIER.init();
-
+    // RAPIER is already loaded via the wasm plugin
     setLoadProgress(40, 'Initializing renderer...');
 
     const container = document.getElementById('game')!;
@@ -31,7 +30,7 @@ async function init() {
 
     // Hide loading screen
     setTimeout(() => {
-      loadingScreen.classList.add('hidden');
+      if (loadingScreen) loadingScreen.classList.add('hidden');
       engine.start();
     }, 500);
 
@@ -39,9 +38,16 @@ async function init() {
 
   } catch (error) {
     console.error('Failed to initialize:', error);
-    loadStatus.textContent = `ERROR: ${error}`;
-    loadStatus.style.color = '#f00';
+    if (loadStatus) {
+      loadStatus.textContent = `ERROR: ${error}`;
+      loadStatus.style.color = '#f00';
+    }
   }
 }
 
-init();
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
