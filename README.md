@@ -63,6 +63,28 @@ At any moment, reality can **collapse**. The 3D world flattens into a top-down v
 
 *Which view is the truth? The immersive 3D world, or the text file underneath?*
 
+### Level Up Screen
+
+When you gain XP or unlock something, no flashy UI. Instead, Notepad opens your save file:
+
+```
+┌─────────────────────────────────────────────────┐
+│ pilot_xX_RedPill_Xx.json - Notepad   [_][□][X] │
+├─────────────────────────────────────────────────┤
+│ File  Edit  Format  View  Help                  │
+├─────────────────────────────────────────────────┤
+│ {                                               │
+│   "pilot": "xX_RedPill_Xx",                     │
+│   "team": "red",                                │
+│   "level": █,                    ← cursor here  │
+│   "xp": 2847,                                   │
+│   "kills": 23                                   │
+│ }                                               │
+└─────────────────────────────────────────────────┘
+```
+
+You watch the cursor select `4`, delete it, type `5`. Then it goes to File → Save. Notepad closes. You're back in the game.
+
 ### Mods & Article Control
 
 **Mods** are NPC entities that patrol articles. You can:

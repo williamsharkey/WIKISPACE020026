@@ -309,7 +309,47 @@ The mindwarp: at any moment, the 3D world collapses into its "true form" - a 199
 - [ ] Can you toggle it manually? Or is it forced?
 - [ ] Strategic implications: ASCII mode might reveal hidden things?
 
-### 5B.7 The Philosophy
+### 5B.7 Level Up / Reward Screen (JSON Save File)
+When you win something, gain XP, unlock an item - no flashy UI. Instead:
+
+- [ ] Notepad.exe window opens
+- [ ] Shows your player state as pretty-printed JSON:
+  ```json
+  {
+    "pilot": "xX_RedPill_Xx",
+    "team": "red",
+    "level": 4,
+    "xp": 2847,
+    "kills": 23,
+    "edits": 7,
+    "unlocks": ["boost_v2", "red_trail"]
+  }
+  ```
+- [ ] Animated cursor blinks, then moves to the field being changed
+- [ ] **Selection animation**: highlight the old value (like shift+arrow keys)
+- [ ] **Delete animation**: selected text disappears
+- [ ] **Typing animation**: new value typed character by character
+  - `"level": 4` → cursor selects `4` → deletes → types `5`
+  - `"xp": 2847` → cursor selects `2847` → deletes → types `3150`
+- [ ] If new unlock: cursor goes to end of unlocks array, types `, "new_item"`
+- [ ] After all edits complete:
+  - Cursor moves to menu bar
+  - Clicks "File"
+  - Dropdown appears
+  - Clicks "Save" (or Ctrl+S keystroke shown)
+  - Brief pause
+  - Window closes
+- [ ] Sound: keyboard clicks for typing, menu click sounds
+- [ ] Player returns to game
+
+**Details:**
+- [ ] JSON must be valid and correctly formatted
+- [ ] Syntax highlighting? NO - it's Notepad, not VS Code
+- [ ] Typing speed: fast enough to not bore, slow enough to read
+- [ ] Multiple fields can be edited in sequence
+- [ ] File title: `pilot_xX_RedPill_Xx.json - Notepad`
+
+### 5B.8 The Philosophy
 ```
 In WIKISPACE020026, reality has layers:
 
@@ -474,7 +514,10 @@ WIKISPACE020026/
 │   │       │   ├── WorldToGrid.ts    # 3D coords → integer row/col
 │   │       │   ├── ASCIISprites.ts   # Character mappings (^ v < > * @)
 │   │       │   ├── Transition.ts     # 3D ↔ ASCII morph effects
-│   │       │   └── RealityShift.ts   # Trigger conditions, state management
+│   │       │   ├── RealityShift.ts   # Trigger conditions, state management
+│   │       │   ├── JSONLevelUp.ts    # Animated JSON save file editing
+│   │       │   ├── CursorAnimator.ts # Cursor movement, selection, typing
+│   │       │   └── MenuAnimator.ts   # File → Save animation
 │   │       ├── multiplayer/
 │   │       │   ├── NetworkClient.ts  # Socket.io client
 │   │       │   ├── Prediction.ts     # Client-side prediction
