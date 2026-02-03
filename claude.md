@@ -349,7 +349,52 @@ When you win something, gain XP, unlock an item - no flashy UI. Instead:
 - [ ] Multiple fields can be edited in sequence
 - [ ] File title: `pilot_xX_RedPill_Xx.json - Notepad`
 
-### 5B.8 The Philosophy
+### 5B.8 Game End / Victory Screen
+When you "win" (match ends, your team victorious):
+
+- [ ] Final Notepad.exe window opens
+- [ ] Shows complete player JSON with all stats:
+  ```json
+  {
+    "pilot": "xX_RedPill_Xx",
+    "team": "red",
+    "result": "VICTORY",
+    "match_id": "020026-7A3F-WIKI",
+    "timestamp": "020026-02-03T14:23:07Z",
+    "level": 12,
+    "xp": 15847,
+    "stats": {
+      "kills": 47,
+      "deaths": 12,
+      "edits": 23,
+      "words_changed": 198,
+      "mods_pilled": 15,
+      "mods_destroyed": 8,
+      "articles_visited": 34,
+      "links_traversed": 89
+    },
+    "unlocks": ["boost_v2", "red_trail", "ascii_vision", ...],
+    "edit_history": [
+      {"article": "Philosophy", "word": "truth", "changed_to": "lies"},
+      {"article": "Reality", "word": "objective", "changed_to": "subjective"},
+      ...
+    ]
+  }
+  ```
+- [ ] Below the Notepad window: a single button
+- [ ] Button text: `[ Download pilot_xX_RedPill_Xx.json ]`
+- [ ] Click triggers browser download of actual .json file
+- [ ] File is valid JSON, can be opened in any text editor
+- [ ] File contains everything - your complete existence in WIKISPACE
+
+**Implications:**
+- [ ] Players can keep their "soul" as a souvenir
+- [ ] Could later support "import" to restore state? (stretch goal)
+- [ ] Leaderboards could accept JSON uploads for verification
+- [ ] Players can share their JSON files ("look at my edit history")
+- [ ] The file IS the trophy
+
+### 5B.9 The Philosophy
 ```
 In WIKISPACE020026, reality has layers:
 

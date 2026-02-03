@@ -85,6 +85,16 @@ When you gain XP or unlock something, no flashy UI. Instead, Notepad opens your 
 
 You watch the cursor select `4`, delete it, type `5`. Then it goes to File → Save. Notepad closes. You're back in the game.
 
+### Victory: Download Your Soul
+
+When you win, the final screen shows your complete JSON - all your stats, every word you edited, your entire history. Below it:
+
+```
+        [ Download pilot_xX_RedPill_Xx.json ]
+```
+
+Click it. The file downloads. Your existence in WIKISPACE, saved to your hard drive forever. A text file is your trophy.
+
 ### Mods & Article Control
 
 **Mods** are NPC entities that patrol articles. You can:
