@@ -6,6 +6,8 @@ import { Ship } from '../ships/Ship';
 import { Input } from './Input';
 import { Starfield } from '../world/Starfield';
 import { WikiWorld } from '../world/WikiWorld';
+import { Weapon } from '../combat/Weapon';
+import { CombatEffects } from '../combat/Effects';
 import { HUD } from '../ui/HUD';
 
 export class Engine {
@@ -24,6 +26,8 @@ export class Engine {
   private ship!: Ship;
   private starfield!: Starfield;
   private wikiWorld!: WikiWorld;
+  private weapon!: Weapon;
+  private effects!: CombatEffects;
   private input!: Input;
   private hud!: HUD;
 
@@ -103,6 +107,10 @@ export class Engine {
     // Wikipedia world
     this.wikiWorld = new WikiWorld(this.scene);
 
+    // Combat systems
+    this.weapon = new Weapon(this.scene);
+    this.effects = new CombatEffects(this.scene);
+
     // Load initial article
     await this.wikiWorld.loadArticle('Philosophy');
 
@@ -150,6 +158,15 @@ export class Engine {
     const inputState = this.input.getState();
     this.ship.handleInput(inputState, dt);
 
+    // Handle firing
+    if (inputState.fire && !this.weapon.isOverheated()) {
+      const shipState = this.ship.getState();
+      const fireDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(this.ship.getQuaternion());
+      const firePosition = shipState.position.clone().add(fireDirection.clone().multiplyScalar(3));
+
+      this.weapon.fire(firePosition, fireDirection, this.ship.getQuaternion());
+    }
+
     // Step physics world
     this.world.step();
 
@@ -162,6 +179,11 @@ export class Engine {
     this.starfield.update(this.camera.position);
     this.ship.update(dt);
     this.wikiWorld.update(dt);
+    this.weapon.update(dt);
+    this.effects.update(dt);
+
+    // Check projectile collisions with monuments
+    this.checkProjectileCollisions();
 
     // Check for link ramp interaction
     if (!this.transitioning) {
@@ -175,7 +197,20 @@ export class Engine {
 
     // Update HUD
     const shipState = this.ship.getState();
-    this.hud.update(shipState, this.wikiWorld.getCurrentArticle());
+    this.hud.update(shipState, this.wikiWorld.getCurrentArticle(), this.weapon.getHeat());
+  }
+
+  private checkProjectileCollisions() {
+    // Check hits on monuments (letters)
+    const monuments = this.wikiWorld.getMonuments();
+    for (const monument of monuments) {
+      const hit = this.weapon.checkCollision(monument.mesh.position, 2);
+      if (hit) {
+        this.effects.createLetterDestruction(monument.mesh.position.clone(), monument.getText());
+        // TODO: Actually destroy or damage the monument
+        console.log(`Hit letter: ${monument.getText()}`);
+      }
+    }
   }
 
   private async traverseLink(targetArticle: string) {

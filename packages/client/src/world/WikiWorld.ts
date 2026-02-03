@@ -266,6 +266,10 @@ export class WikiWorld {
     return this.currentArticle;
   }
 
+  getMonuments(): TextMonument[] {
+    return this.monuments;
+  }
+
   update(dt: number) {
     // Animate monuments, ramps
     this.monuments.forEach(m => m.update(dt));

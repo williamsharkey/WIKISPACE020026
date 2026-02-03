@@ -294,4 +294,9 @@ export class Ship {
     const pos = this.rigidBody.translation();
     return new THREE.Vector3(pos.x, pos.y, pos.z);
   }
+
+  getQuaternion(): THREE.Quaternion {
+    const rot = this.rigidBody.rotation();
+    return new THREE.Quaternion(rot.x, rot.y, rot.z, rot.w);
+  }
 }

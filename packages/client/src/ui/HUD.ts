@@ -11,6 +11,7 @@ export class HUD {
   private crosshair: HTMLElement;
   private positionElement: HTMLElement;
   private articleElement: HTMLElement;
+  private heatBar: HTMLElement;
 
   constructor() {
     this.container = this.createHUD();
@@ -23,6 +24,7 @@ export class HUD {
     this.crosshair = document.getElementById('hud-crosshair')!;
     this.positionElement = document.getElementById('hud-position')!;
     this.articleElement = document.getElementById('hud-article')!;
+    this.heatBar = document.getElementById('hud-heat-fill')!;
   }
 
   private createHUD(): HTMLElement {
@@ -85,6 +87,17 @@ export class HUD {
           width: 100%;
         }
 
+        #hud-heat-fill {
+          background: linear-gradient(90deg, #ff0, #f00);
+          width: 0%;
+        }
+
+        .hud-bar-label {
+          font-size: 10px;
+          opacity: 0.7;
+          margin-bottom: 2px;
+        }
+
         #hud-boost {
           margin-top: 10px;
           font-size: 14px;
@@ -145,8 +158,12 @@ export class HUD {
 
       <div id="hud-stats">
         <div id="hud-speed">0</div>
+        <div class="hud-bar-label">HULL</div>
         <div class="hud-bar"><div class="hud-bar-fill" id="hud-health-fill"></div></div>
+        <div class="hud-bar-label">SHIELD</div>
         <div class="hud-bar"><div class="hud-bar-fill" id="hud-shield-fill"></div></div>
+        <div class="hud-bar-label">HEAT</div>
+        <div class="hud-bar"><div class="hud-bar-fill" id="hud-heat-fill"></div></div>
         <div id="hud-boost">[ BOOST READY ]</div>
       </div>
 
@@ -166,7 +183,7 @@ export class HUD {
     return container;
   }
 
-  update(state: ShipState, article?: string) {
+  update(state: ShipState, article?: string, weaponHeat: number = 0) {
     // Article name
     if (article) {
       this.articleElement.textContent = `>> ${article.replace(/_/g, ' ')}`;
@@ -174,9 +191,10 @@ export class HUD {
     // Speed
     this.speedElement.textContent = Math.floor(state.speed).toString().padStart(3, '0');
 
-    // Health & Shield bars
+    // Health & Shield & Heat bars
     this.healthBar.style.width = `${state.health}%`;
     this.shieldBar.style.width = `${(state.shield / 50) * 100}%`;
+    this.heatBar.style.width = `${weaponHeat * 100}%`;
 
     // Boost indicator
     if (state.boostAvailable) {
