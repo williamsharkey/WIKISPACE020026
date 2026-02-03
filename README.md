@@ -32,6 +32,18 @@ A multiplayer space combat simulator where **real Wikipedia articles become infi
 - Destroy letter-monuments for points
 - Control key articles for territory
 
+### Mods & Article Control
+
+**Mods** are NPC entities that patrol articles. You can:
+- **Destroy** them for points
+- **Pill** them (convert to your team with a sustained beam)
+
+**Article Control**: When your team controls an article (majority presence + mod allegiance) and you kill an enemy there:
+- A **text editor** opens
+- You can **edit 10 words** in the article
+- Your edits become permanent monuments visible to all players
+- Edit links to redirect ramps, change voxel triggers, rewrite history itself
+
 ## Tech Stack
 
 - **Frontend**: Three.js + Rapier physics (WASM)
@@ -64,8 +76,10 @@ npm run build
 | Shift | Boost |
 | Space | Fire |
 | E | Interact with link-ramp |
+| F | Pill beam (hold to convert mods) |
 | Tab | Scoreboard |
 | Enter | Team chat |
+| Esc | Close text editor / menu |
 
 ## Architecture
 

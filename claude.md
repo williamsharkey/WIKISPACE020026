@@ -118,6 +118,55 @@ A multiplayer space combat game where Wikipedia articles become 3D worlds, words
 - [ ] Implement kill feed UI
 - [ ] Add sound effects (placeholder initially)
 
+### 3.5 Mods (NPC System)
+Mods are autonomous entities that patrol articles, representing Wikipedia's moderation system. Both teams can interact with them.
+
+- [ ] Create Mod NPC entity class
+- [ ] Design Mod ship/avatar (distinct from player ships - maybe robotic/bureaucratic aesthetic)
+- [ ] Implement Mod AI behavior:
+  - Patrol patterns within article
+  - Aggro when players cause too much destruction
+  - Chase and attack disruptive players
+- [ ] **Destroy mechanic**: Mods can be killed like players
+  - Destroyed mods respawn after delay
+  - Awards points to attacker's team
+- [ ] **Pill mechanic**: Convert mods to your team
+  - Requires sustained "conversion beam" (hold interaction key)
+  - Pilled mods fight for your team
+  - Pilled mods have team-colored aura (red/blue glow)
+  - Enemy team can re-pill your mods
+- [ ] Mod allegiance affects article control score
+- [ ] Visual indicators for mod state (neutral/red-pilled/blue-pilled)
+
+### 3.6 Article Control & Text Editing
+The ultimate prize: controlling history itself.
+
+- [ ] **Article Control conditions**:
+  - Team must have majority presence in article
+  - Must have pilled more mods than enemy (or destroyed enemy's pilled mods)
+  - Control meter fills over time when conditions met
+- [ ] **Kill-to-Edit trigger**:
+  - When your team controls an article AND you kill an enemy there
+  - Text editor UI opens for the killer
+  - 10-word edit budget per trigger
+- [ ] **Text Editor UI**:
+  - Overlay that pauses local action (you're vulnerable!)
+  - Shows article text with editable regions
+  - Click words to select (up to 10)
+  - Type replacement text
+  - Preview changes in 3D before confirming
+  - Timer limit to complete edit (pressure!)
+- [ ] **Edit persistence**:
+  - Edits stored server-side per match
+  - All players see edited monuments
+  - Edit history tracked (who changed what)
+  - Edits reset between matches (or persist for "ranked" mode?)
+- [ ] **Strategic implications**:
+  - Edited words become your team's "territory markers"
+  - Can edit links to change ramp destinations (!)
+  - Can edit voxel-trigger words to spawn different art
+  - Propaganda warfare - change meaning of articles
+
 ## Phase 4: Multiplayer Infrastructure
 
 ### 4.1 WebSocket Server
@@ -172,8 +221,13 @@ A multiplayer space combat game where Wikipedia articles become 3D worlds, words
   - Letter destruction
   - Article control (time-based)
   - Link traversals
+  - **Mod kills** (destroying neutral or enemy mods)
+  - **Mod conversions** (pilling a mod to your team)
+  - **Edit completions** (successfully editing article text)
+  - **Territory held** (words your team has edited)
 - [ ] Create win conditions
 - [ ] Add match timer
+- [ ] Track edit leaderboard (who's changed the most words)
 
 ### 5.4 Strategic Features
 - [ ] Add mini-map showing article "topology"
@@ -312,6 +366,16 @@ WIKISPACE020026/
 │   │       │   ├── Projectile.ts     # Projectile management
 │   │       │   ├── Damage.ts         # Damage calculation
 │   │       │   └── Effects.ts        # Combat visual effects
+│   │       ├── npcs/
+│   │       │   ├── Mod.ts            # Mod NPC entity
+│   │       │   ├── ModAI.ts          # Patrol/aggro/combat AI
+│   │       │   ├── PillSystem.ts     # Conversion beam mechanic
+│   │       │   └── ModVisuals.ts     # Team-colored auras, states
+│   │       ├── control/
+│   │       │   ├── ArticleControl.ts # Control meter, conditions
+│   │       │   ├── TextEditor.ts     # 10-word edit UI
+│   │       │   ├── EditPreview.ts    # 3D preview of changes
+│   │       │   └── EditSync.ts       # Sync edits to all players
 │   │       ├── multiplayer/
 │   │       │   ├── NetworkClient.ts  # Socket.io client
 │   │       │   ├── Prediction.ts     # Client-side prediction
