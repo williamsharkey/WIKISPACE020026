@@ -8,6 +8,7 @@ import { Starfield } from '../world/Starfield';
 import { WikiWorld } from '../world/WikiWorld';
 import { Weapon } from '../combat/Weapon';
 import { CombatEffects } from '../combat/Effects';
+import { RealityShift } from '../ascii/RealityShift';
 import { HUD } from '../ui/HUD';
 
 export class Engine {
@@ -28,6 +29,7 @@ export class Engine {
   private wikiWorld!: WikiWorld;
   private weapon!: Weapon;
   private effects!: CombatEffects;
+  private realityShift!: RealityShift;
   private input!: Input;
   private hud!: HUD;
 
@@ -98,6 +100,11 @@ export class Engine {
 
   private initInput() {
     this.input = new Input(this.renderer.domElement);
+
+    // TAB to toggle ASCII mode
+    this.input.onKeyPress('Tab', () => {
+      this.realityShift.toggle();
+    });
   }
 
   private async initGameObjects() {
@@ -110,6 +117,9 @@ export class Engine {
     // Combat systems
     this.weapon = new Weapon(this.scene);
     this.effects = new CombatEffects(this.scene);
+
+    // Reality shift (ASCII mode)
+    this.realityShift = new RealityShift();
 
     // Load initial article
     await this.wikiWorld.loadArticle('Philosophy');
@@ -198,6 +208,37 @@ export class Engine {
     // Update HUD
     const shipState = this.ship.getState();
     this.hud.update(shipState, this.wikiWorld.getCurrentArticle(), this.weapon.getHeat());
+
+    // Update reality shift (ASCII mode)
+    const asciiState = this.buildASCIIState();
+    this.realityShift.update(dt, asciiState);
+  }
+
+  private buildASCIIState() {
+    const shipState = this.ship.getState();
+    const shipASCII = this.realityShift.worldToASCII(shipState.position);
+    const direction = this.realityShift.getDirectionFromVelocity(shipState.velocity);
+
+    // Convert monuments to ASCII coordinates
+    const words = this.wikiWorld.getMonuments().slice(0, 50).map(m => {
+      const pos = this.realityShift.worldToASCII(m.mesh.position);
+      return {
+        text: m.getText().substring(0, 10),
+        x: pos.x,
+        y: pos.y,
+        isLink: false // TODO: get this from monument
+      };
+    });
+
+    return {
+      playerX: shipASCII.x,
+      playerY: shipASCII.y,
+      playerDirection: direction,
+      enemies: [], // TODO: other players
+      mods: [], // TODO: mods
+      projectiles: [], // TODO: projectiles
+      words
+    };
   }
 
   private checkProjectileCollisions() {

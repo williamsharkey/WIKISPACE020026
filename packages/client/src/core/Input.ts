@@ -99,4 +99,17 @@ export class Input {
       pill: this.keys.has('KeyF'),
     };
   }
+
+  // For single-press detection (not held)
+  wasKeyJustPressed(code: string): boolean {
+    return this.keys.has(code);
+  }
+
+  onKeyPress(code: string, callback: () => void): void {
+    window.addEventListener('keydown', (e) => {
+      if (e.code === code && !e.repeat) {
+        callback();
+      }
+    });
+  }
 }
