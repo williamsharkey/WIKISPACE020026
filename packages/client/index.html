@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WIKISPACE020026</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+      canvas {
+        display: block;
+      }
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Courier New', monospace;
+        color: #0f0;
+        z-index: 1000;
+      }
+      #loading.hidden {
+        display: none;
+      }
+      #loading h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        letter-spacing: 0.5rem;
+      }
+      #loading .bar {
+        width: 300px;
+        height: 4px;
+        background: #030;
+        border: 1px solid #0f0;
+      }
+      #loading .bar-fill {
+        height: 100%;
+        background: #0f0;
+        width: 0%;
+        transition: width 0.3s;
+      }
+      #loading .status {
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: #0a0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <h1>WIKISPACE020026</h1>
+      <div class="bar"><div class="bar-fill" id="load-bar"></div></div>
+      <div class="status" id="load-status">Initializing reality...</div>
+    </div>
+    <div id="game"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

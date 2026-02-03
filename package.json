@@ -1,0 +1,20 @@
+{
+  "name": "wikispace020026",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multiplayer space combat in Wikipedia-space. Year 020026.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "npm run dev -w @wikispace/client",
+    "dev:server": "npm run dev -w @wikispace/server",
+    "build": "npm run build -w @wikispace/client && npm run build -w @wikispace/server",
+    "start": "npm run start -w @wikispace/server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}
