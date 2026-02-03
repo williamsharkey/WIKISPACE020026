@@ -10,9 +10,9 @@ export class VictoryScreen {
 
   constructor() {
     this.container = this.createScreen();
+    document.body.appendChild(this.container);
     this.content = document.getElementById('victory-json')!;
     this.downloadBtn = document.getElementById('victory-download')!;
-    document.body.appendChild(this.container);
     this.hide();
 
     this.downloadBtn.addEventListener('click', () => this.downloadJSON());

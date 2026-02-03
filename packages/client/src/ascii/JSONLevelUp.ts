@@ -17,8 +17,8 @@ export class JSONLevelUp {
 
   constructor() {
     this.container = this.createWindow();
-    this.content = document.getElementById('json-content')!;
     document.body.appendChild(this.container);
+    this.content = document.getElementById('json-content')!;
     this.hide();
   }
 

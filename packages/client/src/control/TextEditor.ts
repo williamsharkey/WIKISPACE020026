@@ -36,6 +36,8 @@ export class TextEditor {
   constructor(events: TextEditorEvents = {}) {
     this.events = events;
     this.container = this.createEditor();
+    document.body.appendChild(this.container);
+
     this.wordList = document.getElementById('editor-words')!;
     this.inputField = document.getElementById('editor-input') as HTMLInputElement;
     this.submitBtn = document.getElementById('editor-submit')!;
@@ -43,9 +45,7 @@ export class TextEditor {
     this.wordsRemainingEl = document.getElementById('editor-remaining')!;
     this.timerEl = document.getElementById('editor-timer')!;
 
-    document.body.appendChild(this.container);
     this.hide();
-
     this.setupEventListeners();
   }
 

@@ -32,8 +32,8 @@ export class ASCIIRenderer {
   constructor() {
     this.grid = this.createEmptyGrid();
     this.container = this.createNotepadWindow();
-    this.canvas = document.getElementById('ascii-canvas')!;
     document.body.appendChild(this.container);
+    this.canvas = document.getElementById('ascii-canvas')!;
     this.hide();
   }
 
