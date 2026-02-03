@@ -1,6 +1,7 @@
-// Heads-up display - speed, health, crosshair
+// Heads-up display - speed, health, crosshair, control, score
 
 import type { ShipState } from '../ships/Ship';
+import type { ControlState } from '../control/ArticleControl';
 
 export class HUD {
   private container: HTMLElement;
@@ -12,6 +13,9 @@ export class HUD {
   private positionElement: HTMLElement;
   private articleElement: HTMLElement;
   private heatBar: HTMLElement;
+  private controlBar: HTMLElement;
+  private controlText: HTMLElement;
+  private scoreElement: HTMLElement;
 
   constructor() {
     this.container = this.createHUD();
@@ -25,6 +29,9 @@ export class HUD {
     this.positionElement = document.getElementById('hud-position')!;
     this.articleElement = document.getElementById('hud-article')!;
     this.heatBar = document.getElementById('hud-heat-fill')!;
+    this.controlBar = document.getElementById('hud-control-fill')!;
+    this.controlText = document.getElementById('hud-control-text')!;
+    this.scoreElement = document.getElementById('hud-score')!;
   }
 
   private createHUD(): HTMLElement {
@@ -149,6 +156,49 @@ export class HUD {
           opacity: 0.5;
           text-align: right;
         }
+
+        #hud-control {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, 100px);
+          text-align: center;
+        }
+
+        #hud-control-text {
+          font-size: 12px;
+          margin-bottom: 5px;
+          opacity: 0.8;
+        }
+
+        .control-bar-container {
+          width: 300px;
+          height: 8px;
+          background: #333;
+          border: 1px solid #666;
+          display: flex;
+        }
+
+        #hud-control-fill {
+          height: 100%;
+          width: 50%;
+          transition: all 0.3s;
+        }
+
+        #hud-score {
+          position: absolute;
+          top: 80px;
+          left: 20px;
+          font-size: 14px;
+        }
+
+        .score-red {
+          color: #f44;
+        }
+
+        .score-blue {
+          color: #44f;
+        }
       </style>
 
       <div id="hud-title">WIKISPACE020026</div>
@@ -177,13 +227,31 @@ export class HUD {
         <div>WASD - Move | Mouse - Look</div>
         <div>SHIFT - Boost | E - Use Link</div>
         <div>SPACE - Fire | F - Pill</div>
+        <div>TAB - Toggle ASCII Mode</div>
+      </div>
+
+      <div id="hud-score">
+        <span class="score-red">RED: 0</span> | <span class="score-blue">BLUE: 0</span>
+      </div>
+
+      <div id="hud-control">
+        <div id="hud-control-text">CONTESTED</div>
+        <div class="control-bar-container">
+          <div id="hud-control-fill"></div>
+        </div>
       </div>
     `;
 
     return container;
   }
 
-  update(state: ShipState, article?: string, weaponHeat: number = 0) {
+  update(
+    state: ShipState,
+    article?: string,
+    weaponHeat: number = 0,
+    controlState?: ControlState,
+    score?: { red: number; blue: number }
+  ) {
     // Article name
     if (article) {
       this.articleElement.textContent = `>> ${article.replace(/_/g, ' ')}`;
@@ -195,6 +263,36 @@ export class HUD {
     this.healthBar.style.width = `${state.health}%`;
     this.shieldBar.style.width = `${(state.shield / 50) * 100}%`;
     this.heatBar.style.width = `${weaponHeat * 100}%`;
+
+    // Article control
+    if (controlState) {
+      const { controllingTeam, redProgress, blueProgress } = controlState;
+
+      if (controllingTeam === 'red') {
+        this.controlText.textContent = 'RED CONTROLLED';
+        this.controlText.style.color = '#f44';
+        this.controlBar.style.background = 'linear-gradient(90deg, #f44 0%, #f44 100%)';
+        this.controlBar.style.width = '100%';
+      } else if (controllingTeam === 'blue') {
+        this.controlText.textContent = 'BLUE CONTROLLED';
+        this.controlText.style.color = '#44f';
+        this.controlBar.style.background = 'linear-gradient(90deg, #44f 0%, #44f 100%)';
+        this.controlBar.style.width = '100%';
+      } else {
+        this.controlText.textContent = 'CONTESTED';
+        this.controlText.style.color = '#888';
+        // Show progress as gradient
+        const redPct = redProgress * 50;
+        const bluePct = blueProgress * 50;
+        this.controlBar.style.background = `linear-gradient(90deg, #f44 0%, #f44 ${redPct}%, #333 ${redPct}%, #333 ${100-bluePct}%, #44f ${100-bluePct}%, #44f 100%)`;
+        this.controlBar.style.width = '100%';
+      }
+    }
+
+    // Score
+    if (score) {
+      this.scoreElement.innerHTML = `<span class="score-red">RED: ${score.red}</span> | <span class="score-blue">BLUE: ${score.blue}</span>`;
+    }
 
     // Boost indicator
     if (state.boostAvailable) {

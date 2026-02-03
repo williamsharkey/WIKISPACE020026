@@ -115,6 +115,17 @@ export class Engine {
     this.input.onKeyPress('Tab', () => {
       this.realityShift.toggle();
     });
+
+    // X to test text editor (debug)
+    this.input.onKeyPress('KeyX', () => {
+      if (!this.textEditor.getIsActive()) {
+        const words = this.wikiWorld.getMonuments().slice(0, 30).map(m => ({
+          id: m.mesh.userData.id || Math.random().toString(),
+          text: m.getText()
+        }));
+        this.textEditor.show(words);
+      }
+    });
   }
 
   private async initGameObjects() {
@@ -256,7 +267,13 @@ export class Engine {
 
     // Update HUD
     const shipState = this.ship.getState();
-    this.hud.update(shipState, this.wikiWorld.getCurrentArticle(), this.weapon.getHeat());
+    this.hud.update(
+      shipState,
+      this.wikiWorld.getCurrentArticle(),
+      this.weapon.getHeat(),
+      controlState,
+      this.score
+    );
 
     // Update reality shift (ASCII mode)
     const asciiState = this.buildASCIIState();
@@ -318,11 +335,20 @@ export class Engine {
 
     console.log(`Traversing to: ${targetArticle}`);
 
-    // TODO: Add transition effect
+    // Clear old mods
+    this.modManager.clear();
+
+    // Reset article control
+    this.articleControl.reset();
+
+    // Load new article
     await this.wikiWorld.loadArticle(targetArticle);
 
-    // Reset ship position
-    // this.ship.setPosition(new THREE.Vector3(0, 5, 20));
+    // Spawn new mods
+    this.modManager.spawnMods(5, new THREE.Vector3(50, 10, -50), 80);
+
+    // Award points for traversal
+    this.score[this.playerTeam] += 10;
 
     this.transitioning = false;
   }
